@@ -12,18 +12,34 @@ const EMPTY_PRODUCT = {
 
 function LowStockBadge({ onHand, reorderLevel }) {
   if (onHand <= 0) {
-    return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Out of stock</span>;
+    return (
+      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+        Out of stock
+      </span>
+    );
   }
+
   if (onHand <= reorderLevel) {
-    return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Low stock</span>;
+    return (
+      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+        Low stock
+      </span>
+    );
   }
-  return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">In stock</span>;
+
+  return (
+    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+      In stock
+    </span>
+  );
 }
 
 function ProductDrawer({ initial, onClose, onSave }) {
   const [form, setForm] = useState(initial || EMPTY_PRODUCT);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -37,7 +53,12 @@ function ProductDrawer({ initial, onClose, onSave }) {
           <h2 className="text-lg font-semibold text-slate-800">
             {initial ? "Edit Product" : "New Product"}
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">✕</button>
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600"
+          >
+            ✕
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -51,12 +72,18 @@ function ProductDrawer({ initial, onClose, onSave }) {
             ["initialStock", "Initial Stock"],
           ].map(([key, label]) => (
             <div key={key}>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{label}</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                {label}
+              </label>
               <input
                 name={key}
                 value={form[key]}
                 onChange={handleChange}
-                type={["unitCost", "reorderLevel", "initialStock"].includes(key) ? "number" : "text"}
+                type={
+                  ["unitCost", "reorderLevel", "initialStock"].includes(key)
+                    ? "number"
+                    : "text"
+                }
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
@@ -88,8 +115,15 @@ function StockDrilldown({ product, onClose }) {
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-slate-800">{product.name} — Stock by Location</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">✕</button>
+          <h2 className="text-lg font-semibold text-slate-800">
+            {product.name} — Stock by Location
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600"
+          >
+            ✕
+          </button>
         </div>
 
         <table className="w-full text-sm">
@@ -134,8 +168,11 @@ export default function ProductCatalog() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return products;
+
     return products.filter(
-      (p) => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)
+      (product) =>
+        product.name.toLowerCase().includes(q) ||
+        product.sku.toLowerCase().includes(q)
     );
   }, [products, search]);
 
@@ -151,11 +188,16 @@ export default function ProductCatalog() {
 
   const saveProduct = async (form) => {
     const isEdit = Boolean(editingProduct);
-    await fetch(isEdit ? `/api/products/${editingProduct.id}` : "/api/products", {
-      method: isEdit ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+
+    await fetch(
+      isEdit ? `/api/products/${editingProduct.id}` : "/api/products",
+      {
+        method: isEdit ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      }
+    );
+
     setDrawerOpen(false);
     loadProducts();
   };
@@ -194,26 +236,33 @@ export default function ProductCatalog() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((p) => (
+            {filtered.map((product) => (
               <tr
-                key={p.id}
+                key={product.id}
                 className="border-t border-slate-100 hover:bg-slate-50 cursor-pointer"
-                onClick={() => setDrilldownProduct(p)}
+                onClick={() => setDrilldownProduct(product)}
               >
-                <td className="px-4 py-3 font-medium text-slate-800">{p.name}</td>
-                <td className="px-4 py-3 text-slate-500">{p.sku}</td>
-                <td className="px-4 py-3">{p.category}</td>
-                <td className="px-4 py-3">{p.unitOfMeasure}</td>
-                <td className="px-4 py-3 text-right">{p.onHand}</td>
-                <td className="px-4 py-3 text-right">{p.onHand - p.allocated}</td>
+                <td className="px-4 py-3 font-medium text-slate-800">
+                  {product.name}
+                </td>
+                <td className="px-4 py-3 text-slate-500">{product.sku}</td>
+                <td className="px-4 py-3">{product.category}</td>
+                <td className="px-4 py-3">{product.unitOfMeasure}</td>
+                <td className="px-4 py-3 text-right">{product.onHand}</td>
+                <td className="px-4 py-3 text-right">
+                  {product.onHand - product.allocated}
+                </td>
                 <td className="px-4 py-3">
-                  <LowStockBadge onHand={p.onHand} reorderLevel={p.reorderLevel} />
+                  <LowStockBadge
+                    onHand={product.onHand}
+                    reorderLevel={product.reorderLevel}
+                  />
                 </td>
                 <td className="px-4 py-3 text-right">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      openEdit(p);
+                      openEdit(product);
                     }}
                     className="text-indigo-600 hover:underline"
                   >
@@ -222,9 +271,13 @@ export default function ProductCatalog() {
                 </td>
               </tr>
             ))}
+
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-slate-400">
+                <td
+                  colSpan={8}
+                  className="px-4 py-8 text-center text-slate-400"
+                >
                   No products found.
                 </td>
               </tr>
@@ -242,7 +295,10 @@ export default function ProductCatalog() {
       )}
 
       {drilldownProduct && (
-        <StockDrilldown product={drilldownProduct} onClose={() => setDrilldownProduct(null)} />
+        <StockDrilldown
+          product={drilldownProduct}
+          onClose={() => setDrilldownProduct(null)}
+        />
       )}
     </div>
   );

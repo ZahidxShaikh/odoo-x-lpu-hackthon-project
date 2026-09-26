@@ -1,6 +1,3 @@
-// StockSense — Inventory Management System
-// Section 1: Database & Data Model
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,8 +6,6 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
-// ---------- Enums ----------
 
 enum Role {
   MANAGER
@@ -32,8 +27,6 @@ enum OperationStatus {
   CANCELED
 }
 
-// ---------- Users & Roles ----------
-
 model User {
   id           String   @id @default(uuid())
   name         String
@@ -46,8 +39,6 @@ model User {
   operations Operation[] @relation("OperationResponsible")
 }
 
-// ---------- Warehouse & Location Hierarchy ----------
-
 model Warehouse {
   id        String   @id @default(uuid())
   name      String
@@ -59,21 +50,19 @@ model Warehouse {
 }
 
 model Location {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   name        String
   shortCode   String
   warehouseId String
   warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
   createdAt   DateTime  @default(now())
 
-  stockLevels    StockLevel[]
-  movesFrom      StockMove[]  @relation("MoveFromLocation")
-  movesTo        StockMove[]  @relation("MoveToLocation")
+  stockLevels StockLevel[]
+  movesFrom   StockMove[] @relation("MoveFromLocation")
+  movesTo     StockMove[] @relation("MoveToLocation")
 
   @@unique([warehouseId, shortCode])
 }
-
-// ---------- Product Catalog ----------
 
 model Product {
   id            String   @id @default(uuid())
@@ -91,19 +80,17 @@ model Product {
 }
 
 model StockLevel {
-  id         String  @id @default(uuid())
+  id         String @id @default(uuid())
   productId  String
   locationId String
-  onHand     Int     @default(0)
-  allocated  Int     @default(0)
+  onHand     Int    @default(0)
+  allocated  Int    @default(0)
 
   product  Product  @relation(fields: [productId], references: [id])
   location Location @relation(fields: [locationId], references: [id])
 
   @@unique([productId, locationId])
 }
-
-// ---------- Operations & Movements ----------
 
 model Operation {
   id            String          @id @default(uuid())
@@ -121,7 +108,7 @@ model Operation {
 }
 
 model MoveLine {
-  id          String  @id @default(uuid())
+  id          String @id @default(uuid())
   operationId String
   productId   String
   quantity    Int
@@ -130,7 +117,6 @@ model MoveLine {
   product   Product   @relation(fields: [productId], references: [id])
 }
 
-// Immutable ledger — every confirmed stock movement is appended here and never edited.
 model StockMove {
   id             String          @id @default(uuid())
   reference      String

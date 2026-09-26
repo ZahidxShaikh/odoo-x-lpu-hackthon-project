@@ -1,122 +1,130 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState } from "react";
+import Login from "./components/auth/Login";
+import SignUp from "./components/auth/SignUp";
+import OTPReset from "./components/auth/OTPReset";
+import Dashboard from "./components/Dashboard";
+import ProductCatalog from "./components/ProductCatalog";
+import OperationsManager from "./components/operations/OperationsManager";
+import StockAdjustment from "./components/StockAdjustment";
+import MoveHistory from "./components/MoveHistory";
+import WarehouseSettings from "./components/WarehouseSettings";
 
-function App() {
-  const [count, setCount] = useState(0)
+const NAV = [
+  { key: "dashboard", label: "Dashboard" },
+  { key: "products", label: "Products" },
+  { key: "receipts", label: "Receipts" },
+  { key: "deliveries", label: "Deliveries" },
+  { key: "transfers", label: "Internal Transfers" },
+  { key: "adjustments", label: "Adjustments" },
+  { key: "history", label: "Move History" },
+  { key: "settings", label: "Settings" },
+];
+
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [authView, setAuthView] = useState("login");
+  const [page, setPage] = useState("dashboard");
+  const [opContext, setOpContext] = useState(null);
+
+  if (!user) {
+    if (authView === "signup") {
+      return (
+        <SignUp
+          onSignUpSuccess={setUser}
+          onNavigate={setAuthView}
+        />
+      );
+    }
+
+    if (authView === "reset") {
+      return (
+        <OTPReset
+          onResetSuccess={() => setAuthView("login")}
+          onNavigate={setAuthView}
+        />
+      );
+    }
+
+    return (
+      <Login
+        onLoginSuccess={setUser}
+        onNavigate={setAuthView}
+      />
+    );
+  }
+
+  const goToOperations = (_target, context) => {
+    setOpContext(context);
+    setPage(
+      context.type === "RECEIPT"
+        ? "receipts"
+        : context.type === "DELIVERY"
+          ? "deliveries"
+          : "transfers"
+    );
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="flex min-h-screen bg-slate-50">
+      <aside className="w-56 bg-white border-r border-slate-200 flex flex-col">
+        <div className="px-4 py-5 font-semibold text-slate-800">
+          StockSense
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
+        <nav className="flex-1 px-2 space-y-1">
+          {NAV.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => setPage(item.key)}
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm ${
+                page === item.key
+                  ? "bg-indigo-50 text-indigo-700 font-medium"
+                  : "text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+        <div className="px-4 py-4 border-t border-slate-200 text-sm text-slate-500">
+          {user.name}
+          <button
+            onClick={() => setUser(null)}
+            className="block mt-1 text-red-500 hover:underline"
+          >
+            Log out
+          </button>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      </aside>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <main className="flex-1 overflow-y-auto">
+        {page === "dashboard" && (
+          <Dashboard onNavigate={goToOperations} />
+        )}
+        {page === "products" && <ProductCatalog />}
+        {page === "receipts" && (
+          <OperationsManager
+            type="RECEIPT"
+            operationId={opContext?.operationId}
+          />
+        )}
+        {page === "deliveries" && (
+          <OperationsManager
+            type="DELIVERY"
+            operationId={opContext?.operationId}
+          />
+        )}
+        {page === "transfers" && (
+          <OperationsManager
+            type="INTERNAL"
+            operationId={opContext?.operationId}
+          />
+        )}
+        {page === "adjustments" && <StockAdjustment />}
+        {page === "history" && <MoveHistory />}
+        {page === "settings" && <WarehouseSettings />}
+      </main>
+    </div>
+  );
 }
-
-export default App

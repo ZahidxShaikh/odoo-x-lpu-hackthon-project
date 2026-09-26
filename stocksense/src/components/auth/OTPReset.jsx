@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export default function OTPReset({ onResetSuccess, onNavigate }) {
-  const [step, setStep] = useState("request"); // request -> verify -> reset
+  const [step, setStep] = useState("request");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
