@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Login from "./components/auth/Login";
 import SignUp from "./components/auth/SignUp";
 import OTPReset from "./components/auth/OTPReset";
@@ -22,18 +22,51 @@ const NAV = [
 
 export default function App() {
   const [user, setUser] = useState(null);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [authView, setAuthView] = useState("login");
   const [page, setPage] = useState("dashboard");
   const [opContext, setOpContext] = useState(null);
 
+  useEffect(() => {
+    let active = true;
+    fetch("/api/auth/me")
+      .then(async (response) =>
+        response.ok ? (await response.json()).user : null,
+      )
+      .then((sessionUser) => {
+        if (active && sessionUser) setUser(sessionUser);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setCheckingSession(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const logOut = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      setUser(null);
+      setPage("dashboard");
+      setAuthView("login");
+    }
+  };
+
+  if (!user && checkingSession) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 text-sm font-medium text-slate-600">
+        Restoring your secure session...
+      </main>
+    );
+  }
+
   if (!user) {
     if (authView === "signup") {
-      return (
-        <SignUp
-          onSignUpSuccess={setUser}
-          onNavigate={setAuthView}
-        />
-      );
+      return <SignUp onSignUpSuccess={setUser} onNavigate={setAuthView} />;
     }
 
     if (authView === "reset") {
@@ -45,12 +78,7 @@ export default function App() {
       );
     }
 
-    return (
-      <Login
-        onLoginSuccess={setUser}
-        onNavigate={setAuthView}
-      />
-    );
+    return <Login onLoginSuccess={setUser} onNavigate={setAuthView} />;
   }
 
   const goToOperations = (_target, context) => {
@@ -60,16 +88,14 @@ export default function App() {
         ? "receipts"
         : context.type === "DELIVERY"
           ? "deliveries"
-          : "transfers"
+          : "transfers",
     );
   };
 
   return (
     <div className="flex min-h-screen bg-slate-50">
       <aside className="w-56 bg-white border-r border-slate-200 flex flex-col">
-        <div className="px-4 py-5 font-semibold text-slate-800">
-          StockSense
-        </div>
+        <div className="px-4 py-5 font-semibold text-slate-800">StockSense</div>
 
         <nav className="flex-1 px-2 space-y-1">
           {NAV.map((item) => (
@@ -90,7 +116,7 @@ export default function App() {
         <div className="px-4 py-4 border-t border-slate-200 text-sm text-slate-500">
           {user.name}
           <button
-            onClick={() => setUser(null)}
+            onClick={logOut}
             className="block mt-1 text-red-500 hover:underline"
           >
             Log out
@@ -99,9 +125,7 @@ export default function App() {
       </aside>
 
       <main className="flex-1 overflow-y-auto">
-        {page === "dashboard" && (
-          <Dashboard onNavigate={goToOperations} />
-        )}
+        {page === "dashboard" && <Dashboard onNavigate={goToOperations} />}
         {page === "products" && <ProductCatalog />}
         {page === "receipts" && (
           <OperationsManager
